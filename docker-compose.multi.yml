@@ -1,0 +1,95 @@
+services:
+  reranker-1:
+    build: .
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-jinaai/jina-reranker-v3}
+      - DEVICE=${DEVICE:-cuda:0}
+      - HOST=0.0.0.0
+      - PORT=8001
+    env_file: .env
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  reranker-2:
+    build: .
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-jinaai/jina-reranker-v3}
+      - DEVICE=${DEVICE:-cuda:0}
+      - HOST=0.0.0.0
+      - PORT=8002
+    env_file: .env
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]
+    depends_on:
+      reranker-1:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  reranker-3:
+    build: .
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-jinaai/jina-reranker-v3}
+      - DEVICE=${DEVICE:-cuda:0}
+      - HOST=0.0.0.0
+      - PORT=8003
+    env_file: .env
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]
+    depends_on:
+      reranker-2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      reranker-1:
+        condition: service_healthy
+      reranker-2:
+        condition: service_healthy
+      reranker-3:
+        condition: service_healthy
+
+volumes:
+  hf-cache:

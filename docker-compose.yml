@@ -1,0 +1,19 @@
+services:
+  reranker:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_NAME=jinaai/jina-reranker-v3
+      - DEVICE=cuda:0
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]
