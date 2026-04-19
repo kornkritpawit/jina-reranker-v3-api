@@ -8,7 +8,7 @@ services:
       - PORT=8001
     env_file: .env
     volumes:
-      - hf-cache:/root/.cache/huggingface
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
     deploy:
       resources:
         reservations:
@@ -32,7 +32,7 @@ services:
       - PORT=8002
     env_file: .env
     volumes:
-      - hf-cache:/root/.cache/huggingface
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
     deploy:
       resources:
         reservations:
@@ -59,7 +59,7 @@ services:
       - PORT=8003
     env_file: .env
     volumes:
-      - hf-cache:/root/.cache/huggingface
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
     deploy:
       resources:
         reservations:
@@ -90,6 +90,3 @@ services:
         condition: service_healthy
       reranker-3:
         condition: service_healthy
-
-volumes:
-  hf-cache:
