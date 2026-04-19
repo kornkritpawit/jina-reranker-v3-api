@@ -2,7 +2,7 @@ FROM nvidia/cuda:12.8.0-runtime-ubuntu24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 python3.11-venv python3-pip curl && \
+    python3 python3-venv python3-dev python3-pip curl && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

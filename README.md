@@ -56,7 +56,7 @@ cp .env.example .env
 
 ```bash
 # Build image
-docker build -t jina-reranker-v3-api .
+docker build -t jina-reranker-v3-api:latest .
 
 # Run container พร้อม GPU
 docker run -d \
