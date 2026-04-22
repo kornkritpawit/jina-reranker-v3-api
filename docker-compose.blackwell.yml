@@ -1,0 +1,39 @@
+# docker-compose.blackwell.yml
+# Docker Compose override for NVIDIA Blackwell GPUs (RTX 5070 Ti, RTX 5080, RTX 5090, etc.)
+#
+# ⚠️  Recommended: Use docker build + docker run instead of docker compose:
+#     docker build -f Dockerfile.blackwell -t jina-reranker-v3-api-blackwell:latest .
+#     docker run --gpus all -p 8000:8000 --env-file .env jina-reranker-v3-api-blackwell:latest
+#
+# Alternative (docker compose):
+#   docker compose -f docker-compose.blackwell.yml up --build
+#
+# This file uses Dockerfile.blackwell which installs PyTorch with CUDA 12.8 (cu128)
+# instead of CUDA 13.0 (cu130) required by the standard Dockerfile.
+#
+# Requirements:
+#   - NVIDIA Driver >= 570.0
+#   - CUDA 12.8+ compatible driver
+#   - Docker with NVIDIA Container Toolkit installed
+
+services:
+  reranker:
+    build:
+      context: .
+      dockerfile: Dockerfile.blackwell
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_NAME=jinaai/jina-reranker-v3
+      - DEVICE=cuda:0
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["${GPU_DEVICE_ID:-0}"]
+              capabilities: [gpu]

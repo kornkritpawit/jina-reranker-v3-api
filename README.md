@@ -118,6 +118,34 @@ docker compose -f docker-compose.multi.yml down
 - **nginx** load balancer บน port **8000** ด้วย round-robin
 - ทุก instance ใช้ GPU เดียวกัน (`GPU_DEVICE_ID`, ค่าเริ่มต้น `0`) และแชร์ HuggingFace cache volume
 
+### วิธีที่ 4: Blackwell GPU (RTX 5070 Ti / RTX 5080 / RTX 5090)
+
+NVIDIA Blackwell architecture GPUs ต้องใช้ PyTorch ที่ compile กับ CUDA 12.8+ ใช้ `Dockerfile.blackwell` แทน `Dockerfile` มาตรฐาน:
+
+```bash
+# Build image สำหรับ Blackwell GPU
+docker build -f Dockerfile.blackwell -t jina-reranker-v3-api-blackwell:latest .
+
+# Run container พร้อม GPU
+docker run -d \
+  --gpus all \
+  -p 8000:8000 \
+  --env-file .env \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  --name reranker-blackwell \
+  jina-reranker-v3-api-blackwell:latest
+
+# ดู logs
+docker logs -f reranker-blackwell
+
+# หยุด container
+docker stop reranker-blackwell && docker rm reranker-blackwell
+```
+
+> **หมายเหตุ:** ต้องมี NVIDIA Driver >= 570.0 และ Docker พร้อม NVIDIA Container Toolkit
+>
+> หรือใช้ Docker Compose: `docker compose -f docker-compose.blackwell.yml up --build`
+
 ---
 
 ## การใช้งาน API
